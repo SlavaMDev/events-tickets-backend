@@ -7,13 +7,13 @@ Follow these steps to set up the project locally:
 1. **Clone this repository:**
 
    ```sh
-   git clone <repository-link>
+   git clone https://github.com/SlavaMDev/events-tickets-backend
    ```
 
 2. **Navigate to the project folder:**
 
    ```sh
-   cd backend
+   cd events-tickets-backend
    ```
 
 3. **Install dependencies:**
