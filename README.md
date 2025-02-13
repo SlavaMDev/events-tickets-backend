@@ -30,3 +30,12 @@ Follow these steps to set up the project locally:
 
 5. **Enjoy! 🎉**
 
+## 🧪 Testing the App
+
+### Application runs in the following port `9001`
+
+To test the application, follow these steps:
+ - **POST request** `/auth/login`
+   - **PARAMS:** `body: email`
+ - **GET request** `/tickets`
+   - **PARAMS:** `userType, page, query`

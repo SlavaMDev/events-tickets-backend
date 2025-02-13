@@ -1,0 +1,12 @@
+[{
+  "id": "67ad02ae14679c93afd90041",
+  "name": "Local",
+  "email": "local@email.com",
+  "type": "local"
+},
+{
+  "id": "67ad3a673f0db8100aa3ca0b",
+  "name": "Tourist",
+  "email": "tourist@email.com",
+  "type": "tourist"
+}]

@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Ticket, TicketDocument } from './schema/ticket.schema';
+import { Ticket } from './ticket.types';
 import { UserType } from '../user/user.types';
+import { ConfigService } from '@nestjs/config';
+import { readFile } from 'fs/promises';
 
 @Injectable()
 export class TicketService {
-    constructor(@InjectModel(Ticket.name) private ticketModel: Model<TicketDocument>) {}
-
-    async createTicket(data: Partial<Ticket>): Promise<Ticket> {
-        const newTicket = new this.ticketModel(data);
-        return newTicket.save();
+    private readonly filePath: string;
+    constructor(private configService: ConfigService) {
+        this.filePath = `${this.configService.get<string>('TICKETS_DATA_FILE')}`;
     }
 
     async findAll(
@@ -18,34 +16,32 @@ export class TicketService {
       page: number = 1,
       query: string = ''
     ): Promise<{ tickets: Partial<Ticket[]>, page: number, pages: number }> {
+        const data: string = await readFile(this.filePath, { encoding: 'utf8' });
+        const tickets = JSON.parse(data);
         const pageSize = 10;
-        const count = await this.ticketModel.countDocuments() - 1;
-        const pages = Math.ceil(count / pageSize);
-        let totalPages = pages;
+        const count = tickets.length - 1;
+        let totalPages = Math.ceil(count / pageSize);
         const skip = (page - 1) * pageSize;
         const regex = new RegExp(query, 'i');
-        let tickets = await this.ticketModel.find({
-              $or: [
-                  { title: { $regex: regex } },
-                  { description: { $regex: regex } },
-              ]
-          }
-        ).skip(skip).limit(pageSize).exec();
+        const filteredTickets = tickets.filter((ticket: Ticket) =>
+          regex.test(ticket.title) ||
+          regex.test(ticket.description)
+        );
 
         if (userType === UserType.Tourist) {
-            tickets.forEach(ticket => {
+            filteredTickets.forEach((ticket: Ticket) => {
                 ticket.description = ticket.description.substring(0, ticket.description.length / 2);
             });
         } else if (userType === UserType.Local) {
-            tickets.forEach(ticket => {
+            filteredTickets.forEach((ticket: Ticket) => {
                 ticket.image = '';
             });
         }
 
         if (query.length) {
-            totalPages = Math.ceil(tickets.length / pageSize);
+            totalPages = Math.ceil(filteredTickets.length / pageSize);
         }
 
-        return { tickets, page, pages: totalPages };
+        return { tickets: filteredTickets.slice(skip, skip + pageSize), page, pages: totalPages };
     }
 }
